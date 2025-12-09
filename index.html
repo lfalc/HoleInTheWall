@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hole in the Wall | Project Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="nav">
+      <div class="logo">498 / Hole in the Wall</div>
+      <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+      <nav>
+        <a href="#idea">Idea</a>
+        <a href="#requirements">Requirements</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#milestones">Milestones</a>
+        <a href="#testing">Testing</a>
+        <a href="#constraints">Constraints</a>
+        <a href="#team">Team</a>
+      </nav>
+    </div>
+    <div class="hero-body">
+      <div>
+        <p class="eyebrow">Terminal Game · Ultrasonic Control</p>
+        <h1>Hole in the Wall</h1>
+        <p class="lede">
+          A plug-and-play terminal game rendered over UART with an ultrasonic sensor as the sole control input.
+          Built for rapid setup, deterministic timing, and a 30 FPS display budget on the NUCLEO-L476RG.
+        </p>
+        <div class="pill-row">
+          <span class="pill">30 FPS render cadence</span>
+          <span class="pill">80×24 ANSI display</span>
+          <span class="pill">40 cm reliable range</span>
+          <span class="pill">Single binary deploy</span>
+        </div>
+        <div class="cta">
+          <a class="button" href="#requirements">View specs</a>
+          <a class="ghost" href="#architecture">See architecture</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="tag">Project Snapshot</p>
+        <ul>
+          <li><strong>Platform:</strong> STM32 NUCLEO-L476RG</li>
+          <li><strong>Display:</strong> ANSI/UTF-8 terminal via TeraTerm</li>
+          <li><strong>Input:</strong> Ultrasonic sensor @ 30 Hz</li>
+          <li><strong>Rendering:</strong> DMA-backed frame buffer</li>
+          <li><strong>Goal:</strong> Low-latency, installation-free play</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="idea">
+      <div class="section-header">
+        <p class="eyebrow">Project idea</p>
+        <h2>Terminal “Hole in the Wall” with zero-install setup</h2>
+        <p class="lede">Game logic maps ultrasonic distance bins to player position on a scrolling wall, rendered as ASCII frames over UART.</p>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>UX Goals</h3>
+          <ul>
+            <li>No IDE or drivers required; single binary / script</li>
+            <li>High refresh rate with predictable frame pacing</li>
+            <li>Responsive hand-to-display latency</li>
+            <li>Readable monospace visuals with minimal artifacts</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Key Design Decisions</h3>
+          <ul>
+            <li>Single microcontroller for “all-in-one” constraint</li>
+            <li>ANSI/ASCII terminal rendering to keep output lightweight</li>
+            <li>DMA to offload CPU during frame transfers</li>
+            <li>Hardware timers for deterministic 33.3 ms ticks</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel accent" id="requirements">
+      <div class="section-header">
+        <p class="eyebrow">Requirements</p>
+        <h2>What success looks like</h2>
+      </div>
+      <div class="grid three">
+        <div class="card outline">
+          <h3>Functional</h3>
+          <ul>
+            <li>Distance measurement at 30 Hz</li>
+            <li>Frame generation at 30 FPS</li>
+            <li>ANSI terminal rendering of frames via TeraTerm</li>
+            <li>Input mapped to player movement (binning)</li>
+          </ul>
+        </div>
+        <div class="card outline">
+          <h3>Non-functional</h3>
+          <ul>
+            <li>All-in-one hardware; plug-and-play over UART</li>
+            <li>Low computation overhead for predictable timing</li>
+            <li>Low latency from sensor read to display draw</li>
+            <li>DMA usage wherever possible to free CPU</li>
+          </ul>
+        </div>
+        <div class="card outline">
+          <h3>Constraints</h3>
+          <ul>
+            <li>80 × 24 terminal viewport (monospace, UTF-8)</li>
+            <li>40 cm reliable ultrasonic window</li>
+            <li>No IDE requirement; single deployable binary</li>
+            <li>Self-contained hardware package</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="architecture">
+      <div class="section-header">
+        <p class="eyebrow">System architecture</p>
+        <h2>Timing-driven loop with DMA-backed display</h2>
+        <p class="lede">Every 33.3 ms, hardware timers trigger both a new distance capture and a frame render, keeping sensing and display in lockstep.</p>
+      </div>
+      <div class="grid three columns">
+        <div class="card">
+          <p class="tag">Input</p>
+          <h3>Ultrasonic sensing</h3>
+          <p>Periodic trigger and echo capture; distance readings are binned into discrete player positions.</p>
+          <ul>
+            <li>Timer-driven 30 Hz sampling</li>
+            <li>Range limited to 40 cm window</li>
+            <li>Optional DMA for capture buffers</li>
+          </ul>
+        </div>
+        <div class="card">
+          <p class="tag">Logic</p>
+          <h3>Game loop</h3>
+          <p>Walls descend each frame; collision occurs when player bin overlaps wall gap.</p>
+          <ul>
+            <li>State machine paced at 30 FPS</li>
+            <li>Difficulty via wall patterns & cadence</li>
+            <li>Scoring for survival time and clears</li>
+          </ul>
+        </div>
+        <div class="card">
+          <p class="tag">Output</p>
+          <h3>Terminal renderer</h3>
+          <p>Prebuilt ASCII frames streamed over UART; DMA pushes frame buffer to minimize CPU load.</p>
+          <ul>
+            <li>80 × 24 ANSI canvas</li>
+            <li>UTF-8 characters for walls/player</li>
+            <li>Hardware timers for frame pacing</li>
+          </ul>
+        </div>
+      </div>
+      <div class="grid two columns">
+        <div class="card">
+          <p class="tag">LabFinal firmware signals</p>
+          <h3>Timer + pin map</h3>
+          <ul>
+            <li>TIM3 @ 30 Hz: heartbeats PA5 and calls <code>buildFrame()</code> for each render tick</li>
+            <li>TIM2 CH3 (PB10): PWM trigger pulses for the ultrasonic transmitter</li>
+            <li>TIM4 CH1 (PB6): dual-edge input capture for ultrasonic echo; counts overflows for long pulses</li>
+            <li>USART2 TX + DMA1 CH7: streams frame buffer over UART without stalling the CPU</li>
+          </ul>
+        </div>
+        <div class="card">
+          <p class="tag">Render pipeline</p>
+          <h3>Frame composition</h3>
+          <ul>
+            <li>Frame buffer <code>frameString</code> holds ANSI cursor moves + ASCII walls and player</li>
+            <li><code>buildFrame()</code> draws walls at their row, then maps ultrasonic ticks (20–220) to 80 columns for the player cursor</li>
+            <li><code>Enable_DMA()</code> kicks DMA1 CH7 to push the buffer into <code>USART2->TDR</code></li>
+            <li>ISR cadence: TIM3 interrupt → frame build → DMA transfer → wall positions advance</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel accent" id="milestones">
+      <div class="section-header">
+        <p class="eyebrow">Milestones</p>
+        <h2>Path to a playable demo</h2>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="dot"></div>
+          <div>
+            <h3>Display</h3>
+            <p>Render moving frames at 30 Hz in the terminal; draw player at binned positions.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="dot"></div>
+          <div>
+            <h3>HMI integration</h3>
+            <p>Clamp ultrasonic readings to playable range; map bins to terminal rows/columns.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="dot"></div>
+          <div>
+            <h3>Game core</h3>
+            <p>Generate descending walls with gaps; add collision logic and scoring loop.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="dot"></div>
+          <div>
+            <h3>Extras</h3>
+            <p>Difficulty button, game menu/options, expanded scoring and feedback polish.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="testing">
+      <div class="section-header">
+        <p class="eyebrow">Testing & validation</p>
+        <h2>Measure timing, verify feel</h2>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>Quantitative</h3>
+          <ul>
+            <li>Analog Discovery 2 capture of ultrasonic I/O (period, duty)</li>
+            <li>AD2 capture of UART Tx (period, transmission length)</li>
+            <li>Timing budget: 33.3 ms total per loop</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Qualitative</h3>
+          <ul>
+            <li>Hand motion responsiveness versus on-screen updates</li>
+            <li>Playtester feedback on difficulty and visual clarity</li>
+            <li>Subjective latency checks during rapid movement</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel accent" id="constraints">
+      <div class="section-header">
+        <p class="eyebrow">Constraints</p>
+        <h2>What shapes the build</h2>
+      </div>
+      <div class="grid two">
+        <div class="card outline">
+          <h3>Economic</h3>
+          <p>Target form factor: self-contained, could be packaged as a USB flash drive-style device.</p>
+        </div>
+        <div class="card outline">
+          <h3>Environmental</h3>
+          <p>Indoor use; conservative ultrasonic range to avoid noisy reflections beyond 40 cm.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="team">
+      <div class="section-header">
+        <p class="eyebrow">Team</p>
+        <h2>Who’s building this</h2>
+      </div>
+      <div class="grid two team">
+        <div class="card">
+          <h3>Vera</h3>
+          <p>Email: <a href="mailto:clara5@sfsu.edu">clara5@sfsu.edu</a></p>
+          <p>ID: 916129557</p>
+        </div>
+        <div class="card">
+          <h3>Lorenz</h3>
+          <p>Email: <a href="mailto:lfalcioni@sfsu.edu">lfalcioni@sfsu.edu</a></p>
+          <p>ID: 924901273</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <p class="eyebrow">Need the slides?</p>
+      <p>Content adapted from the ENGR 498 proposal deck. Update this page as the build progresses.</p>
+    </div>
+    <div class="cta">
+      <a class="button small" href="#top">Back to top</a>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('.nav nav');
+
+    menuToggle.addEventListener('click', () => {
+      nav.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
