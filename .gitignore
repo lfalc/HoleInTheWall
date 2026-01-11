@@ -1,0 +1,42 @@
+# Ignore build output
+Debug/
+firmware/Debug/
+**/Debug/
+
+# Object files and build artifacts
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.list
+*.su
+*.d
+*.axf
+
+# Make and dependency files
+*.mk
+*.mk.dep
+*.depend
+
+# IDE and editor files
+.vscode/
+*.launch
+.idea/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temp and swap files
+*~
+*.swp
+*.tmp
+*.log
+
+# Coverage
+.coverage
+coverage/
