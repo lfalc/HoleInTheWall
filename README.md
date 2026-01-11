@@ -8,6 +8,10 @@ An interactive game project built on STM32L476 microcontroller hardware with rea
 
 HoleInTheWall is an embedded systems project that implements a dynamic game on an STM32L476RGTx microcontroller. The game features real-time graphics rendering, sensor-based input handling, and game state management. The project combines low-level hardware programming with interactive gameplay mechanics.
 
+## Gameplay
+
+![Game Screenshot](assets/game_screenshot.png)
+
 ## Features & Functionality
 
 - **Real-Time Game Engine**: Implements a GameFrame system for rendering and a GameTimer for precise timing
@@ -50,3 +54,10 @@ HoleInTheWall/
 ├── styles.css                     # UI styling
 └── README.md                      # This file
 ```
+
+## Build & Flash
+
+**Board:** NUCLEO-L476RG  
+**Tool:** STM32CubeIDE  
+**Steps:** Open `.ioc`, build, flash via ST-LINK  
+**UART Settings:** 115200 baud rate
